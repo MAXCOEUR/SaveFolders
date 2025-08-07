@@ -64,15 +64,19 @@ namespace SaveFolders.Views
                 return;
             }
 
+            List<SaveJob> SaveJobs = _repository.Load();
+
+            if (_saveJob != null)
+            {
+                SaveJobs.Remove(_saveJob);
+            }
 
             var job = new SaveJob
             {
                 SourcePath = SourcePathTextBox.Text.Trim(),
                 DiskSerial = serial.Trim(),
-                DestinationFolderName = DestinationFolderNameTextBox.Text.Trim(),
+                DestinationFolderName = DestinationFolderNameTextBox.Text.Trim()
             };
-
-            List<SaveJob> SaveJobs = _repository.Load();
 
             SaveJobs.Add(job);
             _repository.Save(SaveJobs);
