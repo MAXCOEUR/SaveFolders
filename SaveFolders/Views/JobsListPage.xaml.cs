@@ -29,48 +29,64 @@ namespace SaveFolders.Views
         private readonly MainWindow _mainWindow;
         private ObservableCollection<SaveJob> SaveJobs { get; } = new();
         private SaveJobRepository _repository = new();
-        private RobocopyService _robocopyService = new();
 
         public JobsListPage(MainWindow mainWindow)
         {
             InitializeComponent();
 
             _mainWindow = mainWindow;
-
-            SaveJobsListBox.ItemsSource = SaveJobs;
         }
 
         private void Ajouter_Click(object sender, RoutedEventArgs e)
         {
-            _mainWindow.NavigateTo(1);
+            _mainWindow.NavigateToAddJobPage(null);
         }
-
-        private void Supprimer_Click(object sender, RoutedEventArgs e)
-        {
-            var job = (SaveJob)SaveJobsListBox.SelectedItem;
-            if (job == null)
-            {
-                MessageBox.Show("Sélectionnez un élément à supprimer.");
-                return;
-            }
-
-            SaveJobs.Remove(job);
-            _repository.Save(SaveJobs.ToList());
-        }
-
+        
         private void Lancer_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var job in SaveJobs)
-                _robocopyService.RunCopy(job);
-
-            MessageBox.Show("Sauvegarde terminée !");
+            foreach (JobItemPage job in SaveJobsPanel.Children)
+                job.runCopy();
         }
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
-            SaveJobs.Clear();
-            foreach (var job in _repository.Load())
-                SaveJobs.Add(job);
+            loadListe();
         }
+        private void loadListe()
+        {
+            SaveJobs.Clear();
+            SaveJobsPanel.Children.Clear();
+            foreach (var job in _repository.Load())
+            {
+                SaveJobs.Add(job);
+                var jobControl = new JobItemPage(job);
+                jobControl.EditRequested += JobItem_EditRequested;
+                jobControl.DeleteRequested += JobItem_DeleteRequested;
+                SaveJobsPanel.Children.Add(jobControl);
+            }
+        }
+        private void JobItem_EditRequested(object? sender, SaveJob job)
+        {
+            _mainWindow.NavigateToAddJobPage(job);
+        }
+
+        private void JobItem_DeleteRequested(object? sender, SaveJob job)
+        {
+            var result = MessageBox.Show(
+                $"Voulez-vous vraiment supprimer :\n{job.SourcePath} ?",
+                "Confirmation de suppression",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning
+            );
+
+            if (result == MessageBoxResult.Yes && sender is JobItemPage control)
+            {
+                SaveJobs.Remove(job);
+                _repository.Save(SaveJobs.ToList());
+                loadListe();
+            }
+        }
+
+
     }
 }

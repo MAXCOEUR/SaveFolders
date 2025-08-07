@@ -5,8 +5,62 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:SaveFolders.Views"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
-            
-    </Grid>
+             d:DesignHeight="60" d:DesignWidth="800" Loaded="UserControl_Loaded">
+    <Border BorderThickness="1" BorderBrush="Gray" CornerRadius="4" Padding="5" Margin="5">
+        <Grid Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <!-- Texte -->
+                <ColumnDefinition Width="Auto" />
+                <!-- Séparateur -->
+                <ColumnDefinition Width="Auto" />
+                <!-- Boutons -->
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="SourcePathText" VerticalAlignment="Center" Grid.Column="0"/>
+            <!-- Séparateur -->
+            <TextBlock Text=" | " VerticalAlignment="Center" Margin="10,0" Grid.Column="1"/>
+
+            <TextBlock x:Name="DestinationPathText" VerticalAlignment="Center" Grid.Column="2"/>
+
+            <!-- Séparateur -->
+            <TextBlock Text=" | " VerticalAlignment="Center" Margin="10,0" Grid.Column="3"/>
+
+            <!-- Partie droite : boutons -->
+            <StackPanel Orientation="Horizontal" Grid.Column="4">
+                <!-- Icône de statut -->
+                <Grid Width="30" Height="30" Margin="0,0,5,0" ToolTip="Non synchronisé">
+                    <TextBlock x:Name="SyncStatusIcon"
+                       Text="❌"
+                       FontSize="16"
+                       Foreground="Red"
+                       TextAlignment="Center"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Bouton de synchronisation -->
+                <Button x:Name="SyncButton"
+                    Width="30"
+                    Height="30"
+                    Background="#FF008CBA"
+                    Click="SyncButton_Click"
+                    ToolTip="Synchroniser"
+                    Margin="0,0,5,0">   
+                    <TextBlock Text="⟳" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                
+                <Button x:Name="EditButton" Width="30" Height="30" Margin="0,0,5,0" ToolTip="Modifier" Background="#FF2E42E6" Click="EditButton_Click">
+                    <TextBlock Text="✏️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+                <Button x:Name="DeleteButton" Width="30" Height="30" ToolTip="Supprimer" Background="Red" Click="DeleteButton_Click">
+                    <TextBlock Text="🗑" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+
+
 </UserControl>

@@ -27,27 +27,24 @@ namespace SaveFolders.Views
     public partial class MainWindow : Window
     {
         JobsListPage jobsListPage;
-        AddJobPage addJobPage;
         public MainWindow()
         {
             InitializeComponent();
             jobsListPage = new JobsListPage(this);
-            addJobPage = new AddJobPage(this);
-            NavigateTo(0);
+            NavigateToJobsListPage();
         }
 
-        public void NavigateTo(int numeroPage)
+        public void NavigateToJobsListPage()
         {
-            switch (numeroPage)
-            {
-                case 0:
-                    MainFrame.Navigate(jobsListPage);
-                    break;
-                 case 1:
-                    MainFrame.Navigate(addJobPage);
-                    break;
-            }
-            
+            MainFrame.Navigate(jobsListPage);
+
+        }
+        public void NavigateToAddJobPage(SaveJob? saveJob)
+        {
+
+            AddJobPage addJobPage = new AddJobPage(this, saveJob);
+            MainFrame.Navigate(addJobPage);
+
         }
     }
 }

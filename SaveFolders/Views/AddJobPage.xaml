@@ -86,6 +86,7 @@
                   Grid.Column="3" Grid.ColumnSpan="3"
                   Height="30"
                   VerticalAlignment="Center"/>
+        <Button x:Name="bt_actualiser" Grid.Column="7" Content="🔄"  Grid.Row="2" Click="bt_actualiser_Click"/>
 
         <!-- Label Nom dossier destination -->
         <Label Content="Nom dossier destination :"
@@ -110,8 +111,9 @@
                     HorizontalAlignment="Center"
                     Margin="0 20 0 0"
                     >
-            <Button Content="Retour" Width="100" Click="Back_Click" Margin="0,0,10,0"/>
-            <Button Content="Valider" Width="100" Click="Validate_Click"/>
+            <Button Content="Retour" Width="100" Click="Back_Click" Margin="0,0,10,0" Height="50" Background="Red"/>
+            <Button Content="Valider" Width="100" Click="Validate_Click" Background="#FF01C704"/>
         </StackPanel>
+        
     </Grid>
 </UserControl>

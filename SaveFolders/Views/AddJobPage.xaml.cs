@@ -27,12 +27,14 @@ namespace SaveFolders.Views
     public partial class AddJobPage : UserControl
     {
         private readonly MainWindow _mainWindow;
+        private SaveJob? _saveJob;
         private SaveJobRepository _repository = new();
-        public AddJobPage(MainWindow mainWindow)
+        public AddJobPage(MainWindow mainWindow, SaveJob? saveJob = null)
         {
             InitializeComponent();
 
             _mainWindow = mainWindow;
+            _saveJob = saveJob;
         }
 
         private void Validate_Click(object sender, RoutedEventArgs e)
@@ -74,7 +76,7 @@ namespace SaveFolders.Views
 
             SaveJobs.Add(job);
             _repository.Save(SaveJobs);
-            _mainWindow.NavigateTo(0);
+            _mainWindow.NavigateToJobsListPage();
         }
 
         private string? GetSelectedDriveLetter()
@@ -94,7 +96,7 @@ namespace SaveFolders.Views
 
         private void Back_Click(object sender, RoutedEventArgs e)
         {
-            _mainWindow.NavigateTo(0);
+            _mainWindow.NavigateToJobsListPage();
         }
 
         private void BrowseFolder_Click(object sender, RoutedEventArgs e)
@@ -107,12 +109,39 @@ namespace SaveFolders.Views
 
         private void Grid_Loaded(object sender, RoutedEventArgs e)
         {
+            loadCombo();
+
+            if (_saveJob != null)
+            {
+                SourcePathTextBox.Text = _saveJob.SourcePath;
+                DestinationFolderNameTextBox.Text = _saveJob.DestinationFolderName;
+            }
+        }
+
+        public void loadCombo()
+        {
             var drives = DriveInfo.GetDrives()
                           .Where(d => d.IsReady)
                           .Select(d => $"{d.Name} ({d.VolumeLabel})")
                           .ToList();
 
             DiskComboBox.ItemsSource = drives;
+
+            if (_saveJob != null)
+            {
+                // Sélectionner le disque correspondant au serial
+                var serial = _saveJob.DiskSerial;
+                var matchingDrive = drives.FirstOrDefault(d => DriveHelper.GetVolumeSerial(d.Substring(0, 2)) == serial);
+                if (matchingDrive != null)
+                {
+                    DiskComboBox.SelectedItem = matchingDrive;
+                }
+            }
+        }
+
+        private void bt_actualiser_Click(object sender, RoutedEventArgs e)
+        {
+            loadCombo();
         }
     }
 }
