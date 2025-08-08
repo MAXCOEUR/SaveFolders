@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Windows.Forms.AxHost;
 
 namespace SaveFolders.Views
 {
@@ -34,6 +35,17 @@ namespace SaveFolders.Views
             InitializeComponent();
             _saveJob = saveJob;
             _robocopyService.FinishRequested += FinishTraitement;
+            _robocopyService.ProgressChanged += ProgressChanged;
+        }
+
+        private void ProgressChanged(int index)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ProgressBar.Visibility = Visibility.Visible;
+                ProgressBar.IsIndeterminate = false;
+                ProgressBar.Value = index;
+            });
         }
 
         private void FinishTraitement(object? sender, bool e)
@@ -77,18 +89,22 @@ namespace SaveFolders.Views
                     SyncStatusIcon.Text = "❌";
                     SyncStatusIcon.Foreground = Brushes.Red;
                     SyncStatusIcon.ToolTip = "Non synchronisé";
+                    ProgressBar.Visibility = Visibility.Collapsed;
                 }
                 else if (state == 1)
                 {
                     SyncStatusIcon.Text = "🔄";
                     SyncStatusIcon.Foreground = Brushes.Blue;
                     SyncStatusIcon.ToolTip = "Synchronisation en cours...";
+                    ProgressBar.Visibility = Visibility.Visible;
+                    ProgressBar.IsIndeterminate = true;
                 }
                 else if (state == 2)
                 {
                     SyncStatusIcon.Text = "✅";
                     SyncStatusIcon.Foreground = Brushes.Green;
                     SyncStatusIcon.ToolTip = "Synchronisé avec succès";
+                    ProgressBar.Visibility = Visibility.Collapsed;
                 }
             });
         }

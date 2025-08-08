@@ -1,6 +1,7 @@
 ﻿using SaveFolders.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,16 +16,37 @@ namespace SaveFolders.Repositories
 
         public List<SaveJob> Load()
         {
-            if (!File.Exists(FileName)) return new List<SaveJob>();
+            try
+            {
+                if (!File.Exists(FileName))
+                    return new List<SaveJob>();
 
-            var json = File.ReadAllText(FileName);
-            return JsonSerializer.Deserialize<List<SaveJob>>(json) ?? new List<SaveJob>();
+                var json = File.ReadAllText(FileName);
+                return JsonSerializer.Deserialize<List<SaveJob>>(json) ?? new List<SaveJob>();
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur si besoin
+                Debug.WriteLine($"Erreur lors du chargement des jobs : {ex.Message}");
+                // Ou afficher un message, ou autre gestion selon contexte
+                return new List<SaveJob>();
+            }
         }
 
         public void Save(List<SaveJob> jobs)
         {
-            var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(FileName, json);
+            try
+            {
+                var json = JsonSerializer.Serialize(jobs, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(FileName, json);
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur si besoin
+                Debug.WriteLine($"Erreur lors de la sauvegarde des jobs : {ex.Message}");
+                // Ou gérer l'erreur autrement (ex : throw, message utilisateur...)
+            }
         }
     }
+
 }

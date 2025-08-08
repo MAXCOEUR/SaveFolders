@@ -1,61 +1,101 @@
 ﻿using SaveFolders.Models;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Threading;
+using System.IO;
 
 namespace SaveFolders.Services
 {
     public class RobocopyService
     {
         public event EventHandler<bool>? FinishRequested;
+        public event Action<int>? ProgressChanged;
+
         public void RunCopy(SaveJob job)
         {
             Task.Run(() =>
             {
-                var destination = job.ResolveDestinationPath();
-                if (destination == null)
+                try
                 {
-                    return;
-                }
-
-                var process = new Process
-                {
-                    StartInfo = new ProcessStartInfo
+                    var destination = job.ResolveDestinationPath();
+                    if (destination == null)
                     {
-                        FileName = "robocopy",
-                        Arguments = $"\"{job.SourcePath}\" \"{destination}\" /E /Z /R:2 /W:2",
-                        RedirectStandardOutput = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true
-                    },
-                    EnableRaisingEvents = true
-                };
-
-                // Abonnement à la sortie standard
-                process.OutputDataReceived += (sender, e) =>
-                {
-                    if (!string.IsNullOrEmpty(e.Data))
-                    {
-                        // Affiche dans la console / debug
-                        System.Diagnostics.Debug.WriteLine(e.Data);
-                        // Ou Console.WriteLine(e.Data); si console dispo
+                        FinishRequested?.Invoke(this, false);
+                        return;
                     }
-                };
 
-                process.Start();
-                process.BeginOutputReadLine();  // Commence la lecture asynchrone
+                    int totalFiles = 0;
+                    try
+                    {
+                        totalFiles = Directory.GetFiles(job.SourcePath, "*", SearchOption.AllDirectories).Length;
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Erreur lors du calcul des fichiers source : {ex.Message}");
+                        FinishRequested?.Invoke(this, false);
+                        return;
+                    }
 
-                process.WaitForExit();
+                    int processedFiles = 0;
 
-                bool success = process.ExitCode <= 3; // Considère 0,1,2,3 comme succès acceptable
-                FinishRequested?.Invoke(this, success);
+                    var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = "robocopy",
+                            Arguments = $"\"{job.SourcePath}\" \"{destination}\" /E /Z /TEE /V /R:2 /W:2 /LOG:\"log.txt\"",
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        },
+                        EnableRaisingEvents = true
+                    };
+
+                    process.OutputDataReceived += (sender, e) =>
+                    {
+                        if (!string.IsNullOrEmpty(e.Data))
+                        {
+                            var line = e.Data;
+
+                            Debug.WriteLine(line);
+
+                            if (line.Contains("identique", StringComparison.OrdinalIgnoreCase)
+                                || line.Contains("Plus ancien", StringComparison.OrdinalIgnoreCase)
+                                || line.Contains("modifié", StringComparison.OrdinalIgnoreCase)
+                                || line.Contains("Nouveau fichier", StringComparison.OrdinalIgnoreCase)
+                                || line.Contains("Plus récent", StringComparison.OrdinalIgnoreCase))
+                            {
+                                processedFiles++;
+
+                                if (totalFiles > 0)
+                                {
+                                    int percent = (int)((double)processedFiles / totalFiles * 100);
+                                    ProgressChanged?.Invoke(percent);
+                                }
+                            }
+                        }
+                    };
+
+                    try
+                    {
+                        process.Start();
+                        process.BeginOutputReadLine();
+                        process.WaitForExit();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Erreur lors de l’exécution de robocopy : {ex.Message}");
+                        FinishRequested?.Invoke(this, false);
+                        return;
+                    }
+
+                    bool success = process.ExitCode <= 3;
+                    FinishRequested?.Invoke(this, success);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Erreur inattendue dans RunCopy : {ex.Message}");
+                    FinishRequested?.Invoke(this, false);
+                }
             });
-
-
         }
     }
 }
