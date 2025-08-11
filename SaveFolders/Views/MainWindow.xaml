@@ -5,13 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SaveFolders"
         mc:Ignorable="d"
-        Title="SaveFolders" Height="450" Width="800">
+        Title="SaveFolders" Height="450" Width="800" Loaded="Window_Loaded">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="57*"/>
-            <ColumnDefinition Width="743*"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Grid.ColumnSpan="2" />
+        <Frame x:Name="MainFrame" NavigationUIVisibility="Hidden" Grid.ColumnSpan="1" />
     </Grid>
 
 </Window>

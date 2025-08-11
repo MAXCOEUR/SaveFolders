@@ -27,11 +27,49 @@ namespace SaveFolders.Views
     public partial class MainWindow : Window
     {
         JobsListPage jobsListPage;
+        LoaderPage loaderPage;
+        UserControl? previousPage;
+
+        private DeviceWatcher deviceWatcher;
         public MainWindow()
         {
             InitializeComponent();
+
             jobsListPage = new JobsListPage(this);
-            NavigateToJobsListPage();
+            loaderPage = new LoaderPage();
+
+            DriveHelper.IsLoad += IsLoaderPage;
+            DriveHelper.InitializeAsync();
+
+            deviceWatcher = new DeviceWatcher(this);
+            deviceWatcher.DeviceChanged += DeviceChanged;
+
+        }
+
+        private void DeviceChanged(object? sender, EventArgs e)
+        {
+            DriveHelper.InitializeAsync();
+        }
+
+        private void IsLoaderPage(object? sender, bool isLoading)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (isLoading)
+                {
+                    // Sauvegarde de la page actuelle
+                    previousPage = MainFrame.Content as UserControl;
+                    MainFrame.Navigate(loaderPage);
+                }
+                else
+                {
+                    // Retour sur la page précédente si elle existe
+                    if (previousPage != null)
+                        MainFrame.Navigate(previousPage);
+                    else
+                        NavigateToJobsListPage();
+                }
+            });
         }
 
         public void NavigateToJobsListPage()
@@ -45,6 +83,11 @@ namespace SaveFolders.Views
             AddJobPage addJobPage = new AddJobPage(this, saveJob);
             MainFrame.Navigate(addJobPage);
 
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            deviceWatcher.Start();
         }
     }
 }

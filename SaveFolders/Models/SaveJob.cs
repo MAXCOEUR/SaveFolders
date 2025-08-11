@@ -9,15 +9,14 @@ namespace SaveFolders.Models
 {
     public class SaveJob
     {
-        private static uint _Id = 1;
-        public uint Id { get; set; }
+        public string Id { get; set; }
         public string SourcePath { get; set; } = string.Empty;
         public string DiskSerial { get; set; } = string.Empty;
         public string DestinationFolderName { get; set; } = string.Empty;
 
         public SaveJob()
         {
-            Id = ++_Id;
+            Id = Guid.NewGuid().ToString("N");
         }
 
         public string? ResolveDestinationPath()

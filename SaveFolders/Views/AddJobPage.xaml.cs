@@ -63,6 +63,7 @@ namespace SaveFolders.Views
                 MessageBox.Show("Veuiller entre un nom de dossier");
                 return;
             }
+            bt_valider.IsEnabled = false;
 
             List<SaveJob> SaveJobs = _repository.Load();
 
@@ -111,23 +112,9 @@ namespace SaveFolders.Views
             SourcePathTextBox.Text = dialog.SelectedPath;
         }
 
-        private void Grid_Loaded(object sender, RoutedEventArgs e)
+        public async void loadCombo()
         {
-            loadCombo();
-
-            if (_saveJob != null)
-            {
-                SourcePathTextBox.Text = _saveJob.SourcePath;
-                DestinationFolderNameTextBox.Text = _saveJob.DestinationFolderName;
-            }
-        }
-
-        public void loadCombo()
-        {
-            var drives = DriveInfo.GetDrives()
-                          .Where(d => d.IsReady)
-                          .Select(d => $"{d.Name} ({d.VolumeLabel})")
-                          .ToList();
+            var drives = await DriveHelper.GetDrives();
 
             DiskComboBox.ItemsSource = drives;
 
@@ -146,6 +133,17 @@ namespace SaveFolders.Views
         private void bt_actualiser_Click(object sender, RoutedEventArgs e)
         {
             loadCombo();
+        }
+
+        private void UserControl_Loaded(object sender, RoutedEventArgs e)
+        {
+            loadCombo();
+
+            if (_saveJob != null)
+            {
+                SourcePathTextBox.Text = _saveJob.SourcePath;
+                DestinationFolderNameTextBox.Text = _saveJob.DestinationFolderName;
+            }
         }
     }
 }

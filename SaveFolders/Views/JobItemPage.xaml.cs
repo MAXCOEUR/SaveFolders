@@ -29,6 +29,7 @@ namespace SaveFolders.Views
         // Événements publics
         public event EventHandler<SaveJob>? EditRequested;
         public event EventHandler<SaveJob>? DeleteRequested;
+        public event EventHandler<bool>? SyncRequested;
 
         public JobItemPage(SaveJob saveJob)
         {
@@ -73,11 +74,19 @@ namespace SaveFolders.Views
             EditRequested?.Invoke(this, _saveJob);
         }
 
-        public void runCopy()
+        public async Task RunCopy()
         {
             UpdateSyncStatus(1);
-            _robocopyService.RunCopy(_saveJob);
-            
+            SyncRequested?.Invoke(this, true);
+            await _robocopyService.RunCopy(_saveJob);
+            SyncRequested?.Invoke(this, false);
+        }
+
+        public void isEnable(bool isEnable)
+        {
+            SyncButton.IsEnabled = isEnable;
+            EditButton.IsEnabled = isEnable;
+            DeleteButton.IsEnabled = isEnable;
         }
 
         public void UpdateSyncStatus(int state)
@@ -90,6 +99,7 @@ namespace SaveFolders.Views
                     SyncStatusIcon.Foreground = Brushes.Red;
                     SyncStatusIcon.ToolTip = "Non synchronisé";
                     ProgressBar.Visibility = Visibility.Collapsed;
+                    isEnable(true);
                 }
                 else if (state == 1)
                 {
@@ -98,6 +108,7 @@ namespace SaveFolders.Views
                     SyncStatusIcon.ToolTip = "Synchronisation en cours...";
                     ProgressBar.Visibility = Visibility.Visible;
                     ProgressBar.IsIndeterminate = true;
+                    isEnable(false);
                 }
                 else if (state == 2)
                 {
@@ -105,6 +116,7 @@ namespace SaveFolders.Views
                     SyncStatusIcon.Foreground = Brushes.Green;
                     SyncStatusIcon.ToolTip = "Synchronisé avec succès";
                     ProgressBar.Visibility = Visibility.Collapsed;
+                    isEnable(true);
                 }
             });
         }
@@ -112,7 +124,7 @@ namespace SaveFolders.Views
 
         private void SyncButton_Click(object sender, RoutedEventArgs e)
         {
-            runCopy();
+            RunCopy();
         }
     }
 

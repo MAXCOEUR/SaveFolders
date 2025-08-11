@@ -33,7 +33,6 @@ namespace SaveFolders.Views
         public JobsListPage(MainWindow mainWindow)
         {
             InitializeComponent();
-
             _mainWindow = mainWindow;
         }
 
@@ -41,12 +40,15 @@ namespace SaveFolders.Views
         {
             _mainWindow.NavigateToAddJobPage(null);
         }
-        
-        private void Lancer_Click(object sender, RoutedEventArgs e)
+
+        private async void Lancer_Click(object sender, RoutedEventArgs e)
         {
             foreach (JobItemPage job in SaveJobsPanel.Children)
-                job.runCopy();
+            {
+                await job.RunCopy(); // attend que la précédente se termine
+            }
         }
+
 
         private void UserControl_Loaded(object sender, RoutedEventArgs e)
         {
@@ -62,9 +64,26 @@ namespace SaveFolders.Views
                 var jobControl = new JobItemPage(job);
                 jobControl.EditRequested += JobItem_EditRequested;
                 jobControl.DeleteRequested += JobItem_DeleteRequested;
+                jobControl.SyncRequested += JobItem_SyncRequested;
                 SaveJobsPanel.Children.Add(jobControl);
             }
         }
+
+        private void JobItem_SyncRequested(object? sender, bool e)
+        {
+            bt_start.IsEnabled = !e;
+            bt_ajouter.IsEnabled = !e;
+
+            foreach (var child in SaveJobsPanel.Children)
+            {
+                if (child is JobItemPage jobItem)
+                {
+                    jobItem.isEnable(!e);
+                }
+            }
+
+        }
+
         private void JobItem_EditRequested(object? sender, SaveJob job)
         {
             _mainWindow.NavigateToAddJobPage(job);
@@ -86,7 +105,5 @@ namespace SaveFolders.Views
                 loadListe();
             }
         }
-
-
     }
 }
