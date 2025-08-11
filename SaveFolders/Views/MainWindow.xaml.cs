@@ -6,6 +6,7 @@ using SaveFolders.Repositories;
 using SaveFolders.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
@@ -34,6 +35,12 @@ namespace SaveFolders.Views
         public MainWindow()
         {
             InitializeComponent();
+
+            // Récupérer la version d'assembly
+            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "version inconnue";
+
+            // Afficher dans le titre de la fenêtre
+            this.Title = $"SaveFolders - v{version}";
 
             jobsListPage = new JobsListPage(this);
             loaderPage = new LoaderPage();
